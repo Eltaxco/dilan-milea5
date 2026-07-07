@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Generator Link Undangan</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+background:#233D4D;
+font-family:Poppins,sans-serif;
+padding:40px;
+color:#fff;
+
+}
+
+.container{
+
+max-width:900px;
+margin:auto;
+
+}
+
+.card{
+
+background:rgba(255,255,255,.05);
+
+border:1px solid rgba(216,179,106,.2);
+
+backdrop-filter:blur(20px);
+
+padding:35px;
+
+border-radius:20px;
+
+}
+
+h1{
+
+font-family:"Cormorant Garamond",serif;
+
+font-size:48px;
+
+color:#D8B36A;
+
+margin-bottom:10px;
+
+}
+
+p{
+
+margin-bottom:25px;
+
+color:#ddd;
+
+}
+
+label{
+
+display:block;
+
+margin-bottom:10px;
+
+}
+
+input,textarea{
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:12px;
+
+background:#ffffff10;
+
+color:white;
+
+margin-bottom:20px;
+
+}
+
+textarea{
+
+height:180px;
+
+resize:vertical;
+
+}
+
+button{
+
+background:#D8B36A;
+
+color:#233D4D;
+
+border:none;
+
+padding:14px 24px;
+
+border-radius:50px;
+
+cursor:pointer;
+
+font-weight:bold;
+
+margin-right:10px;
+
+margin-top:10px;
+
+}
+
+button:hover{
+
+opacity:.9;
+
+}
+
+.result{
+
+margin-top:30px;
+
+}
+
+.item{
+
+display:flex;
+
+gap:10px;
+
+align-items:center;
+
+margin-bottom:12px;
+
+}
+
+.item input{
+
+margin:0;
+
+}
+
+.total{
+
+margin-top:20px;
+
+color:#D8B36A;
+
+font-weight:bold;
+
+font-size:18px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>Generator Link Tamu</h1>
+
+<p>
+Masukkan nama tamu, pisahkan menggunakan koma atau Enter.
+</p>
+
+<label>Domain Undangan</label>
+
+<input
+id="domain"
+value="https://domainanda.com/">
+
+<label>Daftar Nama</label>
+
+<textarea id="guest">
+
+Bapak Ahmad,
+Ibu Siti,
+Keluarga Budi
+
+</textarea>
+
+<button onclick="generate()">
+
+Generate
+
+</button>
+
+<button onclick="copyAll()">
+
+Salin Semua
+
+</button>
+
+<div class="total" id="total"></div>
+
+<div id="result" class="result"></div>
+
+</div>
+
+<button onclick="clearData()">
+    Hapus Data
+</button>
+
+<div id="toast" class="toast">
+    ✔ Link berhasil disalin
+</div>
+
+</div>
+
+<style>.toast{
+
+    position:fixed;
+
+    right:25px;
+
+    bottom:25px;
+
+    background:#233D4D;
+
+    color:#fff;
+
+    padding:14px 22px;
+
+    border-radius:14px;
+
+    border:1px solid rgba(216,179,106,.4);
+
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+
+    transform:translateY(30px);
+
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:.35s;
+
+    font-size:15px;
+
+    z-index:9999;
+
+}
+
+.toast.show{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}</style>
+
+
+<script>
+
+let allLinks=[];
+
+function generate(){
+
+const domain=document.getElementById("domain").value.trim();
+
+const guest=document.getElementById("guest").value;
+
+const names=guest
+.replace(/\n/g,",")
+.split(",")
+.map(x=>x.trim())
+.filter(x=>x!="");
+
+const result=document.getElementById("result");
+
+result.innerHTML="";
+
+allLinks=[];
+
+names.forEach(name=>{
+
+const url=domain+"?to="+encodeURIComponent(name);
+
+allLinks.push(url);
+
+result.innerHTML+=`
+
+<div class="item">
+
+<input
+readonly
+value="${url}">
+
+<button onclick="copy('${url}')">
+
+Salin
+
+</button>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("total").innerHTML=
+"Total Tamu : "+names.length;
+
+}
+
+async function copy(text){
+
+    await navigator.clipboard.writeText(text);
+
+    showToast("✔ Link berhasil disalin");
+
+}
+
+function copyAll(){
+
+navigator.clipboard.writeText(allLinks.join("\n"));
+
+alert("Semua link berhasil disalin");
+
+}
+
+generate();
+
+const domainInput = document.getElementById("domain");
+const guestInput = document.getElementById("guest");
+
+// Muat data saat halaman dibuka
+window.addEventListener("DOMContentLoaded", () => {
+
+    const savedDomain = localStorage.getItem("generator_domain");
+    const savedGuest = localStorage.getItem("generator_guest");
+
+    if (savedDomain) {
+        domainInput.value = savedDomain;
+    }
+
+    if (savedGuest) {
+        guestInput.value = savedGuest;
+    }
+
+    generate();
+});
+
+// Simpan otomatis setiap kali mengetik
+domainInput.addEventListener("input", () => {
+    localStorage.setItem("generator_domain", domainInput.value);
+});
+
+guestInput.addEventListener("input", () => {
+    localStorage.setItem("generator_guest", guestInput.value);
+});
+
+function clearData(){
+
+    if(confirm("Hapus semua data yang tersimpan?")){
+
+        localStorage.removeItem("generator_domain");
+        localStorage.removeItem("generator_guest");
+
+        domainInput.value = "";
+        guestInput.value = "";
+
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("total").innerHTML = "";
+
+        allLinks = [];
+
+    }
+
+}
+
+function showToast(message){
+
+    const toast=document.getElementById("toast");
+
+    toast.innerHTML=message;
+
+    toast.classList.add("show");
+
+    clearTimeout(window.toastTimer);
+
+    window.toastTimer=setTimeout(()=>{
+
+        toast.classList.remove("show");
+
+    },2000);
+
+}
+
+</script>
+
+</body>
+</html>
